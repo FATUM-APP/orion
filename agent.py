@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from deepagents import create_deep_agent, FilesystemPermission
-from deepagents.backends import CompositeBackend, StateBackend, StoreBackend
+from deepagents import create_deep_agent, FilesystemPermission, FilesystemBackend, CompositeBackend, StateBackend, StoreBackend
 
 
 from models import model
 from tracing import AGENT_NAME, trace_config
 from subagents import build_subagents
-from deepagents.backends import FilesystemBackend
+
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -34,7 +33,8 @@ class Context:
 
 
 def _thread_id(rt) -> str:
-    return (rt.config or {}).get("configurable", {}).get("thread_id", "no-thread")
+    info = getattr(rt, "execution_info", None)
+    return getattr(info, "thread_id", None) or "no-thread"
 
 
 def client_ns(rt):
@@ -65,6 +65,11 @@ _backend = CompositeBackend(
             root_dir=str(HERE / "agents"),
             virtual_mode=True,
         ),
+        "/skills/": FilesystemBackend(
+            root_dir=str(HERE / "skills"),
+            virtual_mode=True,
+        ),
+
         "/memories/user/client/":       StoreBackend(namespace=client_ns),
         "/memories/user/professional/": StoreBackend(namespace=professional_ns),
         "/memories/service/":           StoreBackend(namespace=service_ns),

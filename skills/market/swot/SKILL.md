@@ -1,5 +1,5 @@
 ---
-name: swot-analysis
+name: swot
 description: Use when the user wants a SWOT analysis, a market diagnosis, or a positioning check for a service or a provider
 ---
 
