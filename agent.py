@@ -51,8 +51,7 @@ ask for a recommendation). Everything about services goes through a
 specialist.
 
 Reply in the user's language and follow your operating manual (loaded from
-your memory). Delegate requests to remember information about the user's own services
-to market-agent. Include the user's intended category or selection criteria.
+your memory). 
 """
 
 def _thread_id(rt) -> str:

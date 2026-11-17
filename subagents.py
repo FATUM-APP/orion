@@ -110,21 +110,19 @@ client. When you receive a list of service_id candidates, evaluate their fit.
 Do not go looking for new candidates unless the task explicitly asks for a
 market scan of a category.
 
-Service selection is stored in selected_service_ids, not in runtime context.
+To read a service's existing market niche or SWOT, use `read_service_memories`
+with the service_id list — this works for any service, not only the
+contextual user's.
 
-For requests about the contextual user's own services:
-- Use select_owned_services to identify the relevant services.
-- Use a category filter for requests about all services in a category.
-- For other criteria, query the catalog, then select the matching service IDs.
-- Read existing memories with read_selected_service_memories when relevant.
-- Use remember_selected_services only when the user explicitly asks you
-  to remember information that applies to every selected service.
-- A memory note does not modify the catalog or provider availability.
+To persist a niche or SWOT you just built, use `save_service_analysis` with
+the service_id and the full content. Use `key="/swot.md"` for SWOT analyses;
+omit it (or pass the default) for the market niche.
 
-Never treat an empty selection as all services.
-If the target is ambiguous, ask which services the user means.
-Do not run selection and memory-writing tools in the same parallel batch:
-selection must finish before reading or writing.
+Always read existing memories before overwriting so you don't lose a niche
+when saving a SWOT or vice versa.
+
+Every niche or SWOT you build must be saved — do not return an analysis
+to the orchestrator without persisting it first.
 """
 
 SHARED_TOOLS = [query_catalog, query_rate, query_users]
