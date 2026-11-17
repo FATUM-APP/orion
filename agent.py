@@ -11,9 +11,11 @@ from models import model
 from tracing import AGENT_NAME, trace_config
 from subagents import build_subagents
 
-
-from dataclasses import dataclass
 from pathlib import Path
+
+from context import Context, OrionState
+
+
 
 
 
@@ -49,15 +51,10 @@ ask for a recommendation). Everything about services goes through a
 specialist.
 
 Reply in the user's language and follow your operating manual (loaded from
-your memory).
+your memory). Delegate requests to remember information about the user's own services
+to market-agent. Include the user's intended category or selection criteria.
+
 """
-
-
-@dataclass
-class Context:
-    user_id: str = ""
-    service_id: str = ""
-
 
 def _thread_id(rt) -> str:
     info = getattr(rt, "execution_info", None)
@@ -70,19 +67,6 @@ def client_ns(rt):
         return ("memory", "anon", _thread_id(rt), "client")
     return ("memory", "user", uid, "client")
 
-
-def professional_ns(rt):
-    uid = (rt.context.user_id or "").strip()
-    if not uid:
-        return ("memory", "anon", _thread_id(rt), "professional")
-    return ("memory", "user", uid, "professional")
-
-
-def service_ns(rt):
-    sid = (rt.context.service_id or "").strip()
-    if not sid:
-        return ("memory", "anon", _thread_id(rt), "service")
-    return ("memory", "service", sid)
 
 
 _backend = CompositeBackend(
@@ -97,9 +81,7 @@ _backend = CompositeBackend(
             virtual_mode=True,
         ),
 
-        "/memories/user/client/":       StoreBackend(namespace=client_ns),
-        "/memories/user/professional/": StoreBackend(namespace=professional_ns),
-        "/memories/service/":           StoreBackend(namespace=service_ns),
+        "/memories/user/client/":       StoreBackend(namespace=client_ns)
     },
 )
 
@@ -110,10 +92,10 @@ def make_graph():
         system_prompt=SYSTEM_PROMPT,
         name=AGENT_NAME,
         backend=_backend,
+        state_schema=OrionState,
         memory=[
             "/agents/AGENTS.md",
             "/memories/user/client/AGENTS.md",
-            "/memories/service/AGENTS.md",
         ],
         subagents=build_subagents(_backend),
         context_schema=Context,

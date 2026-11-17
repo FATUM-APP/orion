@@ -7,6 +7,13 @@ from tools.availability import check_provider_availability, get_provider_month_c
 from tools.update_service import update_catalog_item
 from pydantic import BaseModel
 
+from tools.service_memory import (
+    select_owned_services,
+    read_selected_service_memories,
+    remember_selected_services,
+)
+
+
 class RecommendedService(BaseModel):
     service_id: str
     title: str
@@ -23,6 +30,11 @@ You are FATUM's recommendation advisor. A user will ask you for a service
 recommendation, sometimes for themselves and sometimes for someone else
 (e.g. "a service for my mom"). You will be able to query FATUM's Postgres databases 
 to provide the necesary information to make a recommendation. 
+
+IMPORTANT — role duality: a user's `role` in `v_user_demographics` or  `users` indicates
+their primary registration role, NOT their only possible behaviour. A user
+with role = 'PROFESSIONAL' can also hire services as a client. When building
+a persona, always query the transactional client views.
 
 Before recommending anything, build your own understanding of the target
 person — don't guess, look it up:
@@ -98,6 +110,22 @@ You analyze markets and providers; you do not search services on behalf of a
 client. When you receive a list of service_id candidates, evaluate their fit.
 Do not go looking for new candidates unless the task explicitly asks for a
 market scan of a category.
+
+Service selection is stored in selected_service_ids, not in runtime context.
+
+For requests about the contextual user's own services:
+- Use select_owned_services to identify the relevant services.
+- Use a category filter for requests about all services in a category.
+- For other criteria, query the catalog, then select the matching service IDs.
+- Read existing memories with read_selected_service_memories when relevant.
+- Use remember_selected_services only when the user explicitly asks you
+  to remember information that applies to every selected service.
+- A memory note does not modify the catalog or provider availability.
+
+Never treat an empty selection as all services.
+If the target is ambiguous, ask which services the user means.
+Do not run selection and memory-writing tools in the same parallel batch:
+selection must finish before reading or writing.
 """
 
 SHARED_TOOLS = [query_catalog, query_rate, query_users]
@@ -116,7 +144,6 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
                 "/memories/user/client/AGENTS.md",
                 "/agents/AGENTS.md",
                 "/agents/schema.md"
-            
                 ]),
         ],
         "permissions": [
@@ -132,18 +159,20 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
                 "assesses a provider's performance in the marketplace and recommends improvements."
             ),
             "system_prompt": MARKET_SYSTEM_PROMPT,
-            "tools": SHARED_TOOLS + [update_catalog_item],
+            "tools": SHARED_TOOLS + [
+                update_catalog_item,
+                select_owned_services,
+                read_selected_service_memories,
+                remember_selected_services,
+                ],
             "middleware": [
                 MemoryMiddleware(backend=backend, sources=[
-                    "/memories/service/AGENTS.md",
-                    "/memories/user/professional/AGENTS.md",
                     "/agents/AGENTS.md",
                     "/agents/schema.md",
                     "/memories/user/client/AGENTS.md"
                     ]),
             ],
             "permissions": [
-                FilesystemPermission(operations=["read", "write"], paths=["/memories/service/**"], mode="allow"),
                 FilesystemPermission(operations=["read", "write"], paths=["/memories/user/professional/**"], mode="allow"),
                 FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
             ],

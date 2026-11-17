@@ -22,6 +22,12 @@ Every recommendation in this manual answers one question: **does this person's p
 
 A service is a good recommendation only when both line up. A well-rated service built for a different buyer is **not** a fit and must not be presented as one. The verdict is about the match, not about the service's quality.
 
+## Role duality
+
+In FATUM a user can hold both roles simultaneously: a professional who offers
+services can also hire services as a client. The `role` field in
+`v_user_demographics` or `users` shows the user's **primary** registration role, not their only possible behaviour.
+
 ## Flow: recommending a service
 
 1. **`consulting-agent`** — hand it the target and every constraint the user gave
