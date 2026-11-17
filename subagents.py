@@ -11,6 +11,7 @@ from tools.service_memory import (
     select_owned_services,
     read_selected_service_memories,
     remember_selected_services,
+    read_service_memories
 )
 
 
@@ -138,7 +139,7 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
             "builds a buyer persona for a user and recommends services and providers that match it."
         ),
         "system_prompt": CONSULTING_SYSTEM_PROMPT,
-        "tools": SHARED_TOOLS + [check_provider_availability, get_provider_month_calendar],
+        "tools": SHARED_TOOLS + [check_provider_availability, get_provider_month_calendar, read_service_memories],
         "middleware": [
             MemoryMiddleware(backend=backend, sources=[
                 "/memories/user/client/AGENTS.md",
@@ -156,7 +157,8 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
     market_agent = {
             "name": "market-agent",
             "description": (
-                "assesses a provider's performance in the marketplace and recommends improvements."
+                "assesses a provider's performance in the marketplace, recommends "
+                "improvements, and manages service-level memory for the provider's own services."
             ),
             "system_prompt": MARKET_SYSTEM_PROMPT,
             "tools": SHARED_TOOLS + [
@@ -164,6 +166,7 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
                 select_owned_services,
                 read_selected_service_memories,
                 remember_selected_services,
+                read_service_memories
                 ],
             "middleware": [
                 MemoryMiddleware(backend=backend, sources=[
@@ -173,7 +176,6 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
                     ]),
             ],
             "permissions": [
-                FilesystemPermission(operations=["read", "write"], paths=["/memories/user/professional/**"], mode="allow"),
                 FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
             ],
             "interrupt_on":{

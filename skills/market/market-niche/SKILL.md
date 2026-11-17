@@ -20,3 +20,9 @@ that have been hired it, and the feedback received from them.
 # Output
 
  Based on your analysis, the output should be a definition of the market niche for the service. This should include the target public, the spefcific problem that you are solving for them, if they obtained the expected results, and what is your unique value proposition that differentiates your service from competitors. You can read /references/REFERENCE.md to have an idea of what a market niche is and how to build it.
+
+ Save the niche definition using `remember_selected_services` with
+`replace=True`. The service must be selected first with
+`select_owned_services`. Read the existing niche with
+`read_service_memories` before overwriting to preserve any
+provider notes that should carry forward.

@@ -71,6 +71,7 @@ worked examples.
 2. ...
 ```
 
-Keep the whole analysis under ~600 words. If you save it, write it to
-`/memories/service/swot.md`: never overwrite the niche persona at
-`/memories/service/AGENTS.md`.
+Keep the whole analysis under ~600 words. If you save it, 
+save the SWOT using `remember_selected_services` with `key="/swot.md"`
+and `replace=True`. The service must be selected first. This does not
+overwrite the niche at the default memory key.

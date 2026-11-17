@@ -161,12 +161,21 @@ def read_selected_service_memories(
 def remember_selected_services(
     note: str,
     runtime: ToolRuntime[Context],
+    key: str = MEMORY_KEY,
+    replace: bool = False,
 ) -> str:
-    """Append a user-provided note to every selected owned service's memory.
+    """Write to every selected owned service's memory.
 
-    Only use after an explicit request to remember information.
-    The same note must apply to every selected service.
+    Only use after an explicit request to remember information or when a
+    skill (market-niche, SWOT) produces a structured analysis to save.
+    The same content must apply to every selected service.
     This does not modify catalog records, prices, or availability.
+
+    key: memory slot to write to. Default is the main niche document
+         ("/AGENTS.md"). Use "/swot.md" for SWOT analyses.
+    replace: if True, replaces the entire content instead of appending.
+             Use for structured analyses (niche, SWOT). Default False
+             appends a timestamped note.
     """
     if not note.strip():
         raise ValueError("The memory note cannot be empty.")
@@ -182,22 +191,27 @@ def remember_selected_services(
     for service in services:
         sid = str(service["service_id"])
         namespace = ("memory", "service", sid)
-        existing = runtime.store.get(namespace, MEMORY_KEY)
+        existing = runtime.store.get(namespace, key)
 
-        content = (
-            file_data_to_string(existing.value)
-            if existing
-            else f"# Service memory\n\nService ID: {sid}\n"
-        )
+        if replace:
+            final_content = note.strip()
+        else:
+            content = (
+                file_data_to_string(existing.value)
+                if existing
+                else f"# Service memory\n\nService ID: {sid}\n"
+            )
 
-        entry = (
-            f"\n\n## Provider note — {timestamp}\n"
-            f"Source: contextual user {runtime.context.user_id}\n\n"
-            f"{note.strip()}\n"
-        )
+            entry = (
+                f"\n\n## Provider note — {timestamp}\n"
+                f"Source: contextual user {runtime.context.user_id}\n\n"
+                f"{note.strip()}\n"
+            )
+
+            final_content = content + entry
 
         file_data = create_file_data(
-            content + entry,
+            final_content,
             created_at=(
                 existing.value.get("created_at")
                 if existing
@@ -205,10 +219,43 @@ def remember_selected_services(
             ),
         )
 
-        runtime.store.put(namespace, MEMORY_KEY, file_data)
+        runtime.store.put(namespace, key, file_data)
         saved_ids.append(sid)
 
     return json.dumps(
-        {"saved_service_ids": saved_ids},
+        {"saved_service_ids": saved_ids, "key": key, "replaced": replace},
         ensure_ascii=False,
     )
+
+@tool
+def read_service_memories(
+    service_ids: list[str],
+    runtime: ToolRuntime[Context],
+) -> str:
+    """Read memories (market niche, analysis) for any list of services.
+
+    Use this when evaluating service fit in a recommendation flow
+    or when reviewing a service's existing niche before updating it.
+    Does not require ownership — any active service can be read.
+    """
+    if not service_ids:
+        raise ValueError("Provide at least one service_id.")
+
+    if runtime.store is None:
+        raise RuntimeError("A LangGraph Store is required.")
+
+    ids = list(dict.fromkeys(str(UUID(sid)) for sid in service_ids))
+    memories = []
+
+    for sid in ids:
+        namespace = ("memory", "service", sid)
+        niche = runtime.store.get(namespace, MEMORY_KEY)
+        swot = runtime.store.get(namespace, "/swot.md")
+
+        memories.append({
+            "service_id": sid,
+            "niche": file_data_to_string(niche.value) if niche else "",
+            "swot": file_data_to_string(swot.value) if swot else "",
+        })
+
+    return json.dumps(memories, ensure_ascii=False)
