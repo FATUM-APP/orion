@@ -35,6 +35,7 @@ import os  # noqa: F401  # usado en los ejemplos comentados de Kimi / OpenRouter
 from pathlib import Path
 
 from dotenv import dotenv_values
+from langchain_ollama import ChatOllama
 
 # El .env manda sobre lo que tengas exportado en la terminal, para que el modelo
 # y la trazabilidad sean los mismos con `langgraph dev` y con scripts. Una
@@ -49,7 +50,7 @@ from langchain.chat_models import init_chat_model  # noqa: E402  # tras cargar e
 # ═══ Modelos activos ═════════════════════════════════════════════════════════
 # Default: Anthropic claude-haiku-4-5, rápido y económico.
 # Requiere ANTHROPIC_API_KEY en .env
-model = init_chat_model("anthropic:claude-haiku-4-5", timeout=60, max_retries=2)
+#model = init_chat_model("anthropic:claude-haiku-4-5", timeout=60, max_retries=2)
 
 # Modelo con más criterio, para los pasos que lo necesitan (orquestación,
 # revisión de cifras, redacción final).
@@ -76,7 +77,10 @@ strong_model = init_chat_model(
 # Ojo: los modelos pequeños (7-8B) fallan llamando herramientas o inventan
 # nombres; deja strong_model en un modelo hospedado.
 #
-# model = init_chat_model("ollama:qwen2.5:7b")
+model = ChatOllama(
+    model="mimo-v2.6:latest",
+        temperature=0.4
+)
 
 # Kimi (Moonshot AI): API hospedada compatible con OpenAI
 # No necesita instalación extra (langchain-openai es dependencia base)
