@@ -71,7 +71,6 @@ worked examples.
 2. ...
 ```
 
-Keep the whole analysis under ~600 words. If you save it, 
-Save the SWOT using `save_service_analysis` with the service_id and
-`key="/swot.md"`. This does not overwrite the niche at the default
-memory key.
+Keep the whole analysis under ~600 words. If you save it, write it to
+`/memories/service/swot.md`: never overwrite the niche persona at
+`/memories/service/AGENTS.md`.

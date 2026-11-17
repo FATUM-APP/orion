@@ -5,7 +5,7 @@ description: Use when the user wants to build a market niche for a given service
 
 # Context
 
-Undderstand market niche as the specific segment of the market that a service is targeting. It includes the characteristics of the ideal customer, their needs, preferences, and behaviors. Read the existing niche with read_service_memories before building a new one.
+Undderstand market niche as the specific segment of the market that a service is targeting. It includes the characteristics of the ideal customer, their needs, preferences, and behaviors.
 
 # Step by step
 
@@ -19,6 +19,4 @@ that have been hired it, and the feedback received from them.
 
 # Output
 
- Based on your analysis, the output should be a definition of the market niche for the service. This should include the target public, the spefcific problem that you are solving for them, if they obtained the expected results, and what is your unique value proposition that differentiates your service from competitors. You can read /references/REFERENCE.md to have an idea of what a market niche is and how to build it.
-
-Save the niche definition using save_service_analysis with the service_id.
+ Based on your analysis, the output should be a definition of the market niche for the service. This should include the target public, the spefcific problem that you are solving for them, if they obtained the expected results, and what is your unique value proposition that differentiates your service from competitors. You can read /references/REFERENCE.md to have an idea of what a market niche is and how to build it. Once you have created or updated the niche, save it in your memory

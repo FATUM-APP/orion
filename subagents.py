@@ -6,11 +6,6 @@ from tools.sql import query_catalog, query_rate, query_users
 from tools.availability import check_provider_availability, get_provider_month_calendar
 from tools.update_service import update_catalog_item
 
-from tools.service_memory import (
-    read_service_memories,
-    save_service_analysis
-)
-
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -112,14 +107,6 @@ client. When you receive a list of service_id candidates, evaluate their fit.
 Do not go looking for new candidates unless the task explicitly asks for a
 market scan of a category.
 
-To read a service's existing market niche or SWOT, use `read_service_memories`
-with the service_id list — this works for any service, not only the
-contextual user's.
-
-To persist a niche or SWOT you just built, use `save_service_analysis` with
-the service_id and the full content. Use `key="/swot.md"` for SWOT analyses;
-omit it (or pass the default) for the market niche.
-
 Always read existing memories before overwriting so you don't lose a niche
 when saving a SWOT or vice versa.
 
@@ -143,7 +130,7 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
             "builds a buyer persona for a user and recommends services and providers that match it."
         ),
         "system_prompt": date_header + CONSULTING_SYSTEM_PROMPT,
-        "tools": SHARED_TOOLS + [check_provider_availability, get_provider_month_calendar, read_service_memories],
+        "tools": SHARED_TOOLS + [check_provider_availability, get_provider_month_calendar],
         "middleware": [
             MemoryMiddleware(backend=backend, sources=[
                 "/memories/user/client/AGENTS.md",
@@ -164,19 +151,17 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
                 "improvements, and manages service-level memory (niches, SWOT)."
             ),
             "system_prompt": date_header + MARKET_SYSTEM_PROMPT,
-            "tools": SHARED_TOOLS + [
-                update_catalog_item,
-                read_service_memories,
-                save_service_analysis
-                ],
+            "tools": SHARED_TOOLS + [update_catalog_item],
             "middleware": [
                 MemoryMiddleware(backend=backend, sources=[
+                    "/memories/service/AGENTS.md",
                     "/agents/AGENTS.md",
                     "/agents/schema.md",
                     "/memories/user/client/AGENTS.md"
                     ]),
             ],
             "permissions": [
+                FilesystemPermission(operations=["read", "write"], paths=["/memories/service/**"], mode="allow"),
                 FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
             ],
             "interrupt_on":{

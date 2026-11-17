@@ -84,6 +84,13 @@ def client_ns(rt):
     return ("memory", "user", uid, "client")
 
 
+def service_ns(rt):
+    sid = (rt.context.service_id or "").strip()
+    if not sid:
+        return ("memory", "anon", _thread_id(rt), "service")
+    return ("memory", "service", sid)
+
+
 
 _backend = CompositeBackend(
     default=StateBackend(),
@@ -97,7 +104,8 @@ _backend = CompositeBackend(
             virtual_mode=True,
         ),
 
-        "/memories/user/client/":       StoreBackend(namespace=client_ns)
+        "/memories/user/client/":       StoreBackend(namespace=client_ns),
+        "/memories/service/":           StoreBackend(namespace=service_ns)
     },
 )
 
@@ -111,6 +119,7 @@ def make_graph():
         memory=[
             "/agents/AGENTS.md",
             "/memories/user/client/AGENTS.md",
+            "/memories/service/AGENTS.md",
         ],
         subagents=build_subagents(_backend),
         context_schema=Context,
