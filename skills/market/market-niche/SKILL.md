@@ -19,4 +19,5 @@ that have been hired it, and the feedback received from them.
 
 # Output
 
- Based on your analysis, the output should be a definition of the market niche for the service. This should include the target public, the spefcific problem that you are solving for them, if they obtained the expected results, and what is your unique value proposition that differentiates your service from competitors. You can read /references/REFERENCE.md to have an idea of what a market niche is and how to build it. Once you have created or updated the niche, save it in your memory
+ Based on your analysis, the output should be a definition of the market niche for the service. This should include the target public, the spefcific problem that you are solving for them, if they obtained the expected results, and what is your unique value proposition that differentiates your service from competitors. You can read /references/REFERENCE.md to have an idea of what a market niche is and how to build it. Once you have created or updated the niche, save it to
+`/memories/service/AGENTS.md`.

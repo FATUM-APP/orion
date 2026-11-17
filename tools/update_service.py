@@ -37,8 +37,13 @@ def update_catalog_item(
     Only pass the fields that should actually change; any field left as
     None is left untouched on the existing item.
 
-    `price_type` must match one of the PriceType enum values (e.g. "FIXED",
-    "HOURLY"). `job_type` must match one of the JobType enum values.
+    Field constraints:
+    - `title`: max 40 characters, cannot be blank.
+    - `description`: max 1000 characters.
+    - `base_price`: must be >= 0.
+    - `default_estimated_time`: must be >= 0 and <= 1440 (minutes).
+    - `price_type`: one of FIXED, HOURLY.
+    - `job_type`: one of PRESENCIAL, VIRTUAL.
 
     Returns JSON with `success: true`, or `error` with details on failure.
     """
