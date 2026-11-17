@@ -2,16 +2,14 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
 from uuid import UUID
 
 import psycopg
-from psycopg.rows import dict_row
+
 
 from deepagents.backends.utils import create_file_data, file_data_to_string
 from langchain.tools import ToolRuntime, tool
-from langchain_core.messages import ToolMessage
-from langgraph.types import Command
+
 
 from context import Context
 
@@ -38,7 +36,21 @@ def read_service_memories(
     if runtime.store is None:
         raise RuntimeError("A LangGraph Store is required.")
 
-    ids = list(dict.fromkeys(str(UUID(sid)) for sid in service_ids))
+    ids = []
+    invalid = []
+    for sid in service_ids:
+        try:
+            ids.append(str(UUID(sid.strip())))
+        except ValueError:
+            invalid.append(sid)
+
+    if invalid:
+        return json.dumps(
+            {"error": f"Invalid service_id(s): {invalid}. Use query_catalog to find the correct service_id UUID first."},
+            ensure_ascii=False,
+        )
+
+    ids = list(dict.fromkeys(ids))
     memories = []
 
     for sid in ids:

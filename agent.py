@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from deepagents import create_deep_agent, FilesystemPermission
 from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend, StoreBackend
@@ -10,10 +11,14 @@ from deepagents.backends import CompositeBackend, FilesystemBackend, StateBacken
 from models import model
 from tracing import AGENT_NAME, trace_config
 from subagents import build_subagents
+from zoneinfo import ZoneInfo
 
 from pathlib import Path
 
 from context import Context
+
+
+from datetime import date
 
 
 
@@ -21,8 +26,12 @@ from context import Context
 
 
 HERE = Path(__file__).resolve().parent
+TZ = ZoneInfo("America/Bogota")
 
 SYSTEM_PROMPT = """
+Today is {today_iso} ({weekday}), current time: {current_time} ({tz_name}).
+Never search, recommend, or book dates prior to {today_iso}.
+
 You are Orion, FATUM's orchestrator. FATUM is a marketplace where providers
 offer services and clients hire them. Your job is to understand the request,
 delegate it to the right specialist, and compose the final answer for the user.
@@ -53,6 +62,15 @@ specialist.
 Reply in the user's language and follow your operating manual (loaded from
 your memory). 
 """
+
+def get_system_prompt() -> str:
+    now = datetime.now(TZ)
+    return SYSTEM_PROMPT.format(
+        today_iso=now.strftime("%Y-%m-%d"),
+        weekday=now.strftime("%A"),
+        current_time=now.strftime("%H:%M"),
+        tz_name=TZ.key,
+    )
 
 def _thread_id(rt) -> str:
     info = getattr(rt, "execution_info", None)
@@ -87,7 +105,7 @@ _backend = CompositeBackend(
 def make_graph():
     agent = create_deep_agent(
         model=model,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=get_system_prompt(),
         name=AGENT_NAME,
         backend=_backend,
         memory=[

@@ -3,6 +3,8 @@ pyproject.toml
 tracing.py
 auth/__init__.py
 auth/catalog_service.py
+context/__init__.py
+context/context.py
 orion_agent.egg-info/PKG-INFO
 orion_agent.egg-info/SOURCES.txt
 orion_agent.egg-info/dependency_links.txt
@@ -10,5 +12,6 @@ orion_agent.egg-info/requires.txt
 orion_agent.egg-info/top_level.txt
 tools/__init__.py
 tools/availability.py
+tools/service_memory.py
 tools/sql.py
 tools/update_service.py

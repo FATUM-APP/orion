@@ -16,6 +16,12 @@ to query related information.
 
 ## Schemas
 
+**Important**: each query tool (`query_catalog`, `query_rate`, `query_users`)
+connects to exactly ONE database. You cannot JOIN views across databases in a
+single query. To combine data from different databases, run separate queries
+and correlate the results by their shared identifiers (e.g. `service_id`,
+`provider_id`, `user_id`).
+
 ### v_client_contracted_services (db: catalogservice_db)
 
 This view indicates the services that have been requested by the app users. To determine the interaction of the user
@@ -168,7 +174,10 @@ It gives the details of a rating to know what people like or dislike about the t
 
 ### v_user_demographics (db: postgres)
 
-Shows the demographics of a user
+Shows the demographics of a user. Note: this view does not have a `username` column. To look up a user by
+username, query the `users` table first (`WHERE username = '<value>'`) to
+obtain the `user_id`, then use that id here and in other views.
+
    Column   |         Type          | Collation | Nullable | Default 
 ------------+-----------------------+-----------+----------+---------
  user_id    | character varying(36) |           |          | 

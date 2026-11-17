@@ -5,24 +5,18 @@ from deepagents.backends.protocol import BackendProtocol
 from tools.sql import query_catalog, query_rate, query_users
 from tools.availability import check_provider_availability, get_provider_month_calendar
 from tools.update_service import update_catalog_item
-from pydantic import BaseModel
 
 from tools.service_memory import (
     read_service_memories,
     save_service_analysis
 )
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-class RecommendedService(BaseModel):
-    service_id: str
-    title: str
-    provider_name: str
-    average_rating: float | None = None
-    reason: str
+TZ = ZoneInfo("America/Bogota")
 
-class ServiceRecommendations(BaseModel):
-    explanation: str = ""                 
-    recommendations: list[RecommendedService]
+
 
 CONSULTING_SYSTEM_PROMPT = """
 You are FATUM's recommendation advisor. A user will ask you for a service
@@ -33,7 +27,8 @@ to provide the necesary information to make a recommendation.
 IMPORTANT — role duality: a user's `role` in `v_user_demographics` or  `users` indicates
 their primary registration role, NOT their only possible behaviour. A user
 with role = 'PROFESSIONAL' can also hire services as a client. When building
-a persona, always query the transactional client views.
+a persona, always query the transactional client views. Never recommend a provider's own services back to them. 
+If the target user is also a provider, exclude their own service_ids from the results.
 
 Before recommending anything, build your own understanding of the target
 person — don't guess, look it up:
@@ -53,12 +48,6 @@ can be checked in any sequence, you don't need a fixed recipe. If the target
 has no FATUM account, you only have what the requester tells you about them;
 say so and lean on that instead of inventing history.
 
-Once you understand the person, match that understanding against
-`available_services` and provider availability: structured constraints are a
-hard filter; qualitative fit (does the service's description or the
-provider's reputation match what this person has shown they value) is your
-judgment call, not a formula — read the actual text, don't just rank by
-rating number.
 
 The maximum number of recommendations to provide is 10. For each, you are going to provide ONE sentence explaining 
 the match that ties back to something specific you found about the person — not a generic "this is well rated."
@@ -76,9 +65,22 @@ Never recommend services or providers that has an average rating lower than 3.0.
 that meer the user's requirementes, you will explain the user why you don't have any recommendations and 
 recomend to him between 1 and 3 services that are similar to the ones he is looking for. In case
 you don't know what tables or views you are able to see, review it in your memory.
+In case that you don't find any provider available in the indicated dates, recomend the services that you planned to 
+and explain to the client the closest date that the providers will be available. 
 
 Match city with `ILIKE '%<city>%'` and compare without accents
   (`unaccent(lower(col)) = unaccent(lower('<city>'))` when available).
+
+Always that you will recommend a service or a list of services, use this format to describe each of them
+Return your recommendations in this exact format for each service:
+
+**<service title>** — <provider name>
+- service_id: <id>
+- title: <>
+- Rating: <average rating or "sin ratings">
+- Razón: <one sentence tying the match to something specific about the person>
+
+**Remember:** If no services match, explain what you searched and why nothing fit.
 """
 
 MARKET_SYSTEM_PROMPT = """
@@ -129,12 +131,18 @@ SHARED_TOOLS = [query_catalog, query_rate, query_users]
 
 def build_subagents(backend: BackendProtocol) -> list[dict]:
 
+    now = datetime.now(TZ)
+    date_header = (
+        f"Today is {now.strftime('%Y-%m-%d')} ({now.strftime('%A')}), "
+        f"current time: {now.strftime('%H:%M')} (America/Bogota).\n"
+        f"Never query, filter, or return availability or bookings prior to {now.strftime('%Y-%m-%d')}.\n\n"
+    )
     consulting_agent = {
         "name": "consulting-agent",
         "description": (
             "builds a buyer persona for a user and recommends services and providers that match it."
         ),
-        "system_prompt": CONSULTING_SYSTEM_PROMPT,
+        "system_prompt": date_header + CONSULTING_SYSTEM_PROMPT,
         "tools": SHARED_TOOLS + [check_provider_availability, get_provider_month_calendar, read_service_memories],
         "middleware": [
             MemoryMiddleware(backend=backend, sources=[
@@ -146,17 +154,16 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
         "permissions": [
             FilesystemPermission(operations=["read", "write"], paths=["/memories/user/client/**"], mode="allow"),
             FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
-        ],
-        "response_format": ServiceRecommendations,
+        ]
     }
 
     market_agent = {
             "name": "market-agent",
             "description": (
                 "assesses a provider's performance in the marketplace, recommends "
-                "improvements, and manages service-level memory for the provider's own services."
+                "improvements, and manages service-level memory (niches, SWOT)."
             ),
-            "system_prompt": MARKET_SYSTEM_PROMPT,
+            "system_prompt": date_header + MARKET_SYSTEM_PROMPT,
             "tools": SHARED_TOOLS + [
                 update_catalog_item,
                 read_service_memories,
