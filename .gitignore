@@ -3,4 +3,4 @@
 __pycache__/
 *.pyc
 .langgraph_api/
-outputs
+outputs*.egg-info/

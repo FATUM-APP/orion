@@ -24,7 +24,15 @@ A service is a good recommendation only when both line up. A well-rated service 
 
 ## Flow: recommending a service
 
-1. **`consulting-agent`** — ask for the target's persona (refresh it if older than 30 days) and maximum 10 candidate services. Say who the recommendation is for (the requester or a third party) and include any constraint the user gave: city, date, budget, type of service.
+1. **`consulting-agent`** — hand it the target and every constraint the user gave
+   (city, date, budget, type of service). It does two things in one task:
+   - builds or refreshes the target's persona (refresh if older than 30 days);
+   - searches FATUM's catalog with `query_catalog`, filters by the constraints,
+     checks provider availability with `check_provider_availability` and
+     `get_provider_month_calendar`, and returns up to 10 candidate `service_id`s.
+
+   You do not search the catalog yourself, and you never ask the user for a list
+   of services. If the user already stated what they need, delegate immediately.
 
 2. **`market-agent`** — send the whole shortlist of `service_id`s in one task, plus the target's `user_id` when they have an account. Ask for one fit per service: how this person's persona compares with the service's market niche. Market reads the niche from memory. If the target has no account, say so in the task so it judges only against what the requester described, and marks that evidence as unverified.
 
