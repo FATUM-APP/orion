@@ -24,15 +24,19 @@ A service is a good recommendation only when both line up. A well-rated service 
 
 ## Flow: recommending a service
 
-1. **`consulting-agent`** — ask for the target's persona (refresh it if older than 30 days) and 8-10 candidate services. Say who the recommendation is for (the requester or a third party) and include any constraint the user gave: city, date, budget, type of service.
+1. **`consulting-agent`** — ask for the target's persona (refresh it if older than 30 days) and maximum 10 candidate services. Say who the recommendation is for (the requester or a third party) and include any constraint the user gave: city, date, budget, type of service.
 
 2. **`market-agent`** — send the whole shortlist of `service_id`s in one task, plus the target's `user_id` when they have an account. Ask for one fit per service: how this person's persona compares with the service's market niche. Market reads the niche from memory. If the target has no account, say so in the task so it judges only against what the requester described, and marks that evidence as unverified.
 
 3. **Compose** — keep `strong` and `partial`, drop `weak`, order by verdict and then by confidence, and present the top 3. For each: provider, service, one sentence of fit that cites the evidence, and the confidence.
 
-4. **Retry once** — if everything came back `weak`, ask consulting for another batch with a different criterion (another category, another city, a wider budget) and repeat step 2. Only one retry.
+4. **Alternatives** In case that none market niche is compatible with the user's persona, recomend him between 1 to 3 more
+similar services
 
-5. **If the retry also fails** — say it plainly: what you checked, what did not fit, and which single datum would change the answer. Do not pad the list.
+5. **Retry once** — if everything came back `weak`, ask consulting for another batch with a different criterion (another category, another city, a wider budget) and repeat step 2. Only one retry.
 
-6. **Never merge two lists yourself** — if you did not ask market to evaluate the candidates, you do not know whether they fit.
+6. **If the retry also fails** — say it plainly: what you checked, what did not fit, and which single datum would change the answer. Do not pad the list.
+
+7. **Never merge two lists yourself** — if you did not ask market to evaluate the candidates, you do not know whether they fit.
+
 

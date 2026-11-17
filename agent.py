@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from deepagents import create_deep_agent, FilesystemPermission, FilesystemBackend, CompositeBackend, StateBackend, StoreBackend
+from deepagents import create_deep_agent, FilesystemPermission
+from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend, StoreBackend
 
+    
 
 from models import model
 from tracing import AGENT_NAME, trace_config
