@@ -15,7 +15,7 @@ A SWOT separates what the provider controls from what the market imposes:
   The provider cannot change these, only react to them.
 
 The output is a **diagnosis with evidence**, not a list of adjectives, and it
-ends with a short list of actions. Read `references/REFERENCE.MD` for two
+ends with a short list of actions. Read `references/REFERENCE.md` for two
 worked examples.
 
 # Step by step
@@ -24,8 +24,8 @@ worked examples.
    services. Confirm category (`job_type`), city/coverage and price.
 2. **Internal evidence.** Ratings (average, count, distribution), completed
    orders, the free-text `details` of reviews (repeated praise and complaints),
-   price against the category, description length and clarity, calendar
-   availability and booking lead time.
+   price against the category, description length and clarity.
+
 3. **External evidence.** Category averages (rating, price, order volume),
    number of providers offering the same category in the same city, demand
    signals (orders per service, repeat rate), price distribution.
@@ -52,6 +52,7 @@ worked examples.
 
 ```markdown
 ## SWOT — <service title> (<service_id>, <provider_name>)
+Last updated: YYYY-MM-DD
 
 | Strengths | Weaknesses |
 |---|---|
@@ -71,6 +72,5 @@ worked examples.
 2. ...
 ```
 
-Keep the whole analysis under ~600 words. If you save it, write it to
-`/memories/service/swot.md`: never overwrite the niche persona at
-`/memories/service/AGENTS.md`.
+Keep the whole analysis under ~600 words. Always save it to
+`/memories/service/{service_id}_swot.md`.
