@@ -14,5 +14,6 @@ Requires-Dist: langchain-openai
 Requires-Dist: psycopg[binary]>=3.2
 Requires-Dist: requests>=2.32
 Requires-Dist: langchain-ollama>=1.1.0
+Requires-Dist: langchain-google-genai>=4.5.0
 Provides-Extra: google
 Requires-Dist: langchain-google-genai; extra == "google"
