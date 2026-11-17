@@ -13,7 +13,7 @@ from subagents import build_subagents
 
 from pathlib import Path
 
-from context import Context, OrionState
+from context import Context
 
 
 
@@ -91,7 +91,6 @@ def make_graph():
         system_prompt=SYSTEM_PROMPT,
         name=AGENT_NAME,
         backend=_backend,
-        state_schema=OrionState,
         memory=[
             "/agents/AGENTS.md",
             "/memories/user/client/AGENTS.md",

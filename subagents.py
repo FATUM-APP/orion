@@ -8,10 +8,8 @@ from tools.update_service import update_catalog_item
 from pydantic import BaseModel
 
 from tools.service_memory import (
-    select_owned_services,
-    read_selected_service_memories,
-    remember_selected_services,
-    read_service_memories
+    read_service_memories,
+    save_service_analysis
 )
 
 
@@ -163,10 +161,8 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
             "system_prompt": MARKET_SYSTEM_PROMPT,
             "tools": SHARED_TOOLS + [
                 update_catalog_item,
-                select_owned_services,
-                read_selected_service_memories,
-                remember_selected_services,
-                read_service_memories
+                read_service_memories,
+                save_service_analysis
                 ],
             "middleware": [
                 MemoryMiddleware(backend=backend, sources=[

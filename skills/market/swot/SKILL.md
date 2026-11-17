@@ -72,6 +72,6 @@ worked examples.
 ```
 
 Keep the whole analysis under ~600 words. If you save it, 
-save the SWOT using `remember_selected_services` with `key="/swot.md"`
+save the SWOT using `save_service_analysis` with `key="/swot.md"`
 and `replace=True`. The service must be selected first. This does not
 overwrite the niche at the default memory key.

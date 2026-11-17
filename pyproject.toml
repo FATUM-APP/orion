@@ -25,8 +25,8 @@ dependencies = [
 google = ["langchain-google-genai"]
 
 [tool.setuptools]
-py-modules = ["models", "tracing", "context"]
-packages = ["tools", "auth"]
+py-modules = ["models", "tracing"]
+packages = ["tools", "auth", "context"]
 
 [tool.ruff]
 lint.select = ["E", "F", "I", "UP"]
