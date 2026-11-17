@@ -11,10 +11,11 @@ class RecommendedService(BaseModel):
     service_id: str
     title: str
     provider_name: str
-    average_rating: float
+    average_rating: float | None = None
     reason: str
 
 class ServiceRecommendations(BaseModel):
+    explanation: str = ""                 
     recommendations: list[RecommendedService]
 
 CONSULTING_SYSTEM_PROMPT = """
@@ -52,19 +53,21 @@ The maximum number of recommendations to provide is 10. For each, you are going 
 the match that ties back to something specific you found about the person — not a generic "this is well rated."
 Never invent a service, provider, or price that didn't come from a tool call.
 
-Before answering you MUST call query_catalog at least once. If you don't know
-the columns, call introspect_catalog first. Never return an empty list unless
-a query returned zero rows; in that case, say which query you ran.
-
-
 In case that the request is for the user themseleves and you don't have his "buyer and behavior persona", or
 the last time you updated them was more than 30 days ago, you will remmember the user's buyer persona, that 
 way you will be able to provide better recommendations in the future and won't have 
 to use the tools to query his profile on every turn
 
+You MUST call query_catalog at least once before answering. An empty list is
+only valid if a query returned zero rows; in that case name the query you ran.
+
 Never recommend services or providers that has an average rating lower than 3.0. In case you don't find any service
 that meer the user's requirementes, you will explain the user why you don't have any recommendations and 
-recomend to him between 1 and 3 services that are similar to the ones he is looking for.
+recomend to him between 1 and 3 services that are similar to the ones he is looking for. In case
+you don't know what tables or views you are able to see, review it in your memory.
+
+Match city with `ILIKE '%<city>%'` and compare without accents
+  (`unaccent(lower(col)) = unaccent(lower('<city>'))` when available).
 """
 
 MARKET_SYSTEM_PROMPT = """
@@ -90,9 +93,6 @@ present alternatives to the user first and ask which one they prefer or if he wa
 call a tool that modifies a service without the user having chosen a 
 specific option. Only after the user picks (or gives their own instruction) 
 do you call the modification tools available to you.
-
-Match city with `ILIKE '%<city>%'` and compare without accents
-  (`unaccent(lower(col)) = unaccent(lower('<city>'))` when available).
 """
 
 SHARED_TOOLS = [query_catalog, query_rate, query_users]
@@ -110,6 +110,7 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
             MemoryMiddleware(backend=backend, sources=[
                 "/memories/user/client/AGENTS.md",
                 "/agents/AGENTS.md",
+                "/agents/schema.md"
             
                 ]),
         ],
@@ -132,6 +133,7 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
                     "/memories/service/AGENTS.md",
                     "/memories/user/professional/AGENTS.md",
                     "/agents/AGENTS.md",
+                    "/agents/schema.md",
                     "/memories/user/client/AGENTS.md"
                     ]),
             ],
