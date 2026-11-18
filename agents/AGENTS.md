@@ -40,7 +40,7 @@ services can also hire services as a client. The `role` field in
    You do not search the catalog yourself, and you never ask the user for a list
    of services. If the user already stated what they need, delegate immediately.
 
-2. **`market-agent`** — send the whole shortlist of `service_id`s in one task, plus the target's `user_id` when they have an account. Ask for one fit per service: how this person's persona compares with the service's market niche. Market reads each candidate's niche. If a service has no niche yet, market builds it from the tools and sources that he can access to. If the target has no account, say so in the task so it judges only against what the requester described, and marks that evidence as unverified.
+2. **`market-agent`** — send the whole shortlist of `service_id`s in one task, plus the target's `user_id` when they have an account. Ask for one fit per service: how this person's persona compares with the service's market niche. Market reads each candidate's niche from `/memories/service/{service_id}_niche.md`. If a service has no niche yet, market builds it from the tools and sources that he can access to. If the target has no account, say so in the task so it judges only against what the requester described, and marks that evidence as unverified.
 
 3. **Compose** — keep `strong` and `partial`, drop `weak`, order by verdict and then by confidence, and present the top 3. For each: provider, service, one sentence of fit that cites the evidence, and the confidence.
 

@@ -51,7 +51,8 @@ Never invent a service, provider, or price that didn't come from a tool call.
 In case that the request is for the user themseleves and you don't have his "buyer and behavior persona", or
 the last time you updated them was more than 30 days ago, you will remmember the user's buyer persona, that 
 way you will be able to provide better recommendations in the future and won't have 
-to use the tools to query his profile on every turn
+to use the tools to query his profile on every turn. Save and update the user's buyer persona in 
+/memories/user/client/AGENTS.md, starting the file with "Last updated: YYYY-MM-DD" on the first line.
 
 You MUST call query_catalog at least once before answering. An empty list is
 only valid if a query returned zero rows; in that case name the query you ran.
@@ -112,6 +113,14 @@ when saving a SWOT or vice versa.
 
 Every niche or SWOT you build must be saved — do not return an analysis
 to the orchestrator without persisting it first.
+
+When evaluating a list of candidate `service_id`s against a buyer persona:
+1. Read `/memories/service/{service_id}_niche.md` for each service (or build and save it first if missing or older than 30 days).
+2. Compare the service niche with `/memories/user/client/AGENTS.md` (or the target description provided by Orion).
+3. Return for each `service_id`:
+   - Verdict: `strong`, `partial`, or `weak`
+   - Confidence: `high`, `medium`, or `low` (mark as `unverified` if the target has no FATUM account)
+   - Evidence: 1 sentence explaining the match or mismatch.
 """
 
 SHARED_TOOLS = [query_catalog, query_rate, query_users]
@@ -154,7 +163,6 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
             "tools": SHARED_TOOLS + [update_catalog_item],
             "middleware": [
                 MemoryMiddleware(backend=backend, sources=[
-                    "/memories/service/AGENTS.md",
                     "/agents/AGENTS.md",
                     "/agents/schema.md",
                     "/memories/user/client/AGENTS.md"
@@ -162,6 +170,7 @@ def build_subagents(backend: BackendProtocol) -> list[dict]:
             ],
             "permissions": [
                 FilesystemPermission(operations=["read", "write"], paths=["/memories/service/**"], mode="allow"),
+                FilesystemPermission(operations=["read"], paths=["/skills/market/**", "/memories/user/client/**", "/agents/**"], mode="allow"),
                 FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
             ],
             "interrupt_on":{
